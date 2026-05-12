@@ -18,9 +18,15 @@ jobs:
 
       - name: Extract version from tag
         id: version
-        run: echo "tag=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+        shell: bash
+        run: |
+          # Get the tag name from GITHUB_REF (refs/tags/vX.Y.Z) and strip a leading 'v'
+          TAG="${GITHUB_REF#refs/tags/}"
+          TAG="${TAG#v}"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
 
       - name: Build release body from CHANGELOG
+        id: build_release_body
         shell: bash
         run: |
           VERSION="${{ steps.version.outputs.tag }}"
@@ -48,12 +54,18 @@ jobs:
 
           echo "Extracted $(wc -l < "$OUTFILE") lines from CHANGELOG.md for version $VERSION"
 
+          # Expose the release body as a multiline step output
+          echo "body<<EOF" >> "$GITHUB_OUTPUT"
+          cat "$OUTFILE" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+
       - name: Create Release
-        uses: softprops/action-gh-release@v2
+        uses: actions/create-release@v1
         with:
           tag_name: ${{ github.ref_name }}
-          name: ${{ github.ref_name }}
-          body_path: release_body.md
+          release_name: ${{ github.ref_name }}
+          body: ${{ steps.build_release_body.outputs.body }}
           draft: false
           prerelease: false
-          generate_release_notes: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
