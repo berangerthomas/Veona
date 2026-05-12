@@ -53,7 +53,10 @@ func TestRingBuffer_Overflow(t *testing.T) {
 func TestRingBuffer_Empty(t *testing.T) {
 	rb := NewRingBuffer(5)
 	metrics := rb.PopAll()
-	if metrics != nil {
-		t.Errorf("Expected nil when popping from empty buffer")
+	if metrics == nil {
+		t.Errorf("Expected empty slice, got nil when popping from empty buffer")
+	}
+	if len(metrics) != 0 {
+		t.Errorf("Expected length 0 when popping from empty buffer, got %d", len(metrics))
 	}
 }
