@@ -97,7 +97,7 @@ Run the agent:
 
 ---
 
-## 📊 Querying metrics
+## Querying metrics
 
 Open VictoriaMetrics UI: `http://localhost/vmui/`
 
@@ -181,7 +181,7 @@ veona_mem_used_percent{hostname=~"prod-.*"}
 
 ---
 
-## 🧱 Architecture
+## Architecture
 
 ```
 Go Agent (collect) → HTTP GZIP → Hono Server (validate) → VictoriaMetrics (store)
@@ -193,7 +193,7 @@ Go Agent (collect) → HTTP GZIP → Hono Server (validate) → VictoriaMetrics 
 
 ---
 
-## 📁 Project structure
+## Project structure
 
 ```
 Veona/
@@ -208,7 +208,7 @@ Veona/
 
 ---
 
-## 🔧 Useful commands
+## Useful commands
 
 ```bash
 # Server logs
@@ -226,6 +226,6 @@ cd server && npm run build
 
 ---
 
-## 📄 License
+## License
 
 MIT — see the [LICENSE](LICENSE) file.
