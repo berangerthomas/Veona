@@ -20,35 +20,33 @@ jobs:
         id: version
         run: echo "tag=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
 
-      - name: Extract changelog section to file
+      - name: Build release body from CHANGELOG
         shell: bash
         run: |
           VERSION="${{ steps.version.outputs.tag }}"
-          CHANGELOG_FILE="CHANGELOG.md"
-          RELEASE_FILE="release_body.md"
+          FILE="CHANGELOG.md"
+          OUTFILE="release_body.md"
 
-          # Find the section matching ## [X.Y.Z] - YYYY-MM-DD
-          START=$(grep -n "^## \[$VERSION\]" "$CHANGELOG_FILE" | head -1 | cut -d: -f1)
+          # Find the line number of ## [X.Y.Z] - YYYY-MM-DD
+          START=$(grep -n "^## \[$VERSION\]" "$FILE" | cut -d: -f1 | head -1)
 
           if [ -z "$START" ]; then
             echo "::error::Section for version $VERSION not found in CHANGELOG.md"
             exit 1
           fi
 
-          # Find the next version section (or end of file)
-          TOTAL_LINES=$(wc -l < "$CHANGELOG_FILE")
-          NEXT=$(tail -n +$((START + 1)) "$CHANGELOG_FILE" | grep -n "^## \[" | head -1 | cut -d: -f1)
+          # Find next section (if any). grep returns 1 when not found, we ignore it.
+          NEXT_LINE=$(tail -n +$((START + 1)) "$FILE" | grep -n "^## \[" | cut -d: -f1 | head -1 || true)
 
-          if [ -z "$NEXT" ]; then
-            END=$TOTAL_LINES
+          if [ -z "$NEXT_LINE" ]; then
+            # Last section: take from START to end of file
+            sed -n "${START},\$p" "$FILE" > "$OUTFILE"
           else
-            END=$((START + NEXT - 2))
+            END=$((START + NEXT_LINE - 2))
+            sed -n "${START},${END}p" "$FILE" > "$OUTFILE"
           fi
 
-          # Write to file
-          sed -n "${START},${END}p" "$CHANGELOG_FILE" > "$RELEASE_FILE"
-
-          echo "Extracted $(wc -l < "$RELEASE_FILE") lines from CHANGELOG.md"
+          echo "Extracted $(wc -l < "$OUTFILE") lines from CHANGELOG.md for version $VERSION"
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
