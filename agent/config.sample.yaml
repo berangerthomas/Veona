@@ -1,0 +1,62 @@
+server:
+  url: "http://127.0.0.1:3000/api/metrics"
+  token: "veona_test_token_123"
+
+collectors:
+  cpu:
+    enabled: true
+    interval: "1m"
+
+  gpu:
+    enabled: false
+    interval: "30s"
+    metrics:
+      - "vram_used_percent"
+      - "gpu_load_percent"
+      - "power_watts"
+
+  mem:
+    enabled: true
+    interval: "30s"
+
+  swap:
+    enabled: true
+    interval: "30s"
+
+  load:
+    enabled: true
+    interval: "30s"
+
+  process_states:
+    enabled: false
+    interval: "1m"
+
+  disk:
+    enabled: true
+    interval: "10m"
+    auto_discover: true
+    exclude_fs:
+      - "tmpfs"
+      - "devtmpfs"
+      - "squashfs"
+      - "iso9660"
+
+  temperatures:
+    enabled: false
+    interval: "1m"
+    sensors:
+      - "cpu"
+      - "gpu"
+      - "disk"
+
+  battery:
+    enabled: false
+    interval: "1m"
+
+  entropy:
+    enabled: false
+    interval: "1m"
+
+  time_sync:
+    enabled: false
+    interval: "2m"

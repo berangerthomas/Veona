@@ -1,0 +1,30 @@
+{
+  "name": "veona-server",
+  "version": "1.0.0",
+  "description": "Veona Control and Data Plane Server",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "db:generate": "drizzle-kit generate",
+    "db:push": "drizzle-kit push"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.11.1",
+    "@hono/zod-validator": "^0.7.6",
+    "better-sqlite3": "^10.0.0",
+    "drizzle-orm": "^0.45.2",
+    "hono": "^4.3.0",
+    "lru-cache": "^11.3.6",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.9",
+    "@types/node": "^20.12.7",
+    "drizzle-kit": "^0.31.10",
+    "tsx": "^4.7.2",
+    "typescript": "^5.4.5",
+    "vitest": "^3.1.5"
+  }
+}
