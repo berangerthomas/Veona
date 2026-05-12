@@ -20,46 +20,42 @@ jobs:
         id: version
         run: echo "tag=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
 
-      - name: Extract changelog section
-        id: changelog
+      - name: Extract changelog section to file
         shell: bash
         run: |
           VERSION="${{ steps.version.outputs.tag }}"
           CHANGELOG_FILE="CHANGELOG.md"
+          RELEASE_FILE="release_body.md"
 
-          # Find the section matching the version
-          # Format: ## [X.Y.Z] - YYYY-MM-DD
+          # Find the section matching ## [X.Y.Z] - YYYY-MM-DD
           START=$(grep -n "^## \[$VERSION\]" "$CHANGELOG_FILE" | head -1 | cut -d: -f1)
 
           if [ -z "$START" ]; then
-            echo "error=Section for version $VERSION not found in CHANGELOG.md" >> "$GITHUB_OUTPUT"
-            echo "Section not found"
+            echo "::error::Section for version $VERSION not found in CHANGELOG.md"
             exit 1
           fi
 
           # Find the next version section (or end of file)
+          TOTAL_LINES=$(wc -l < "$CHANGELOG_FILE")
           NEXT=$(tail -n +$((START + 1)) "$CHANGELOG_FILE" | grep -n "^## \[" | head -1 | cut -d: -f1)
 
           if [ -z "$NEXT" ]; then
-            # No next section, take everything from START to EOF
-            BODY=$(tail -n +$START "$CHANGELOG_FILE")
+            END=$TOTAL_LINES
           else
-            # Take lines between START and the next section
-            END=$((START + NEXT - 1))
-            BODY=$(sed -n "${START},${END}p" "$CHANGELOG_FILE")
+            END=$((START + NEXT - 2))
           fi
 
-          # Output the body
-          echo "body<<EOF" >> "$GITHUB_OUTPUT"
-          echo "$BODY" >> "$GITHUB_OUTPUT"
-          echo "EOF" >> "$GITHUB_OUTPUT"
+          # Write to file
+          sed -n "${START},${END}p" "$CHANGELOG_FILE" > "$RELEASE_FILE"
+
+          echo "Extracted $(wc -l < "$RELEASE_FILE") lines from CHANGELOG.md"
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
           name: ${{ github.ref_name }}
-          body: ${{ steps.changelog.outputs.body }}
+          body_path: release_body.md
           draft: false
           prerelease: false
           generate_release_notes: false
